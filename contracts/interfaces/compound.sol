@@ -33,7 +33,7 @@ interface CErc20 is IERC20{
     ) external returns (uint);
 }
 
-interface CEth {
+interface CEth is IERC20{
     function balanceOf(address) external view returns (uint);
 
     function mint() external payable;

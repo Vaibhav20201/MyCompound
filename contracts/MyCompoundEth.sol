@@ -3,25 +3,23 @@ pragma solidity ^0.8;
 
 import "./interfaces/compound.sol";
 
-contract MyCompoundErc20 {
-    IERC20 public token;
-    CErc20 public cToken;
+contract MyCompoundEth {
+    CEth public cToken;
 
-    event Log(string message, uint val);
+    constructor(address _cToken) {
+        cToken = CEth(_cToken);
+    }
 
-    constructor(address _token, address _cToken) {
-        token = IERC20(_token);
-        cToken = CErc20(_cToken);
+    receive() external payable {
+        // React to receiving ether
     }
 
     function getCTokenBalance() public view returns (uint) {
         return cToken.balanceOf(address(this));
     }
 
-    function supply(uint _amount) external {
-        token.transferFrom(msg.sender, address(this), _amount);
-        token.approve(address(cToken), _amount);
-        require(cToken.mint(_amount) == 0, "mint failed");
+    function supply() external payable {
+        cToken.mint{value: msg.value}();
         cToken.transferFrom(address(this), msg.sender, getCTokenBalance());
     }
 

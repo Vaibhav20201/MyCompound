@@ -83,8 +83,7 @@ contract MyCompoundErc20 {
     }
 
     // enter market and borrow
-    function borrow(address _tokenToBorrow, address _cTokenToBorrow, uint _decimals, uint x) external {
-        require(x<100);
+    function borrow(address _tokenToBorrow, address _cTokenToBorrow, uint _decimals, uint _amount) external {
         // enter market
         // enter the supply market so you can borrow another type of asset
         address[] memory cTokens = new address[](1);
@@ -107,12 +106,9 @@ contract MyCompoundErc20 {
         // price - USD scaled up by 1e18
         // decimals - decimals of token to borrow
         uint maxBorrow = (liquidity * (10**_decimals)) / price;
-        require(maxBorrow > 0, "max borrow = 0");
-        // This contract borrows x% of the max borrow
-        // borrow x% of max borrow
-        uint amount = (maxBorrow * x) / 100;
-        require(CErc20(_cTokenToBorrow).borrow(amount) == 0, "borrow failed");
-        IERC20(_tokenToBorrow).transferFrom(address(this), msg.sender, amount);
+        require(maxBorrow > _amount, "Can't borrow this much!");
+        require(CErc20(_cTokenToBorrow).borrow(_amount) == 0, "borrow failed");
+        IERC20(_tokenToBorrow).transferFrom(address(this), msg.sender, _amount);
     }
 
     // borrowed balance (includes interest)

@@ -3,7 +3,7 @@ pragma solidity ^0.8;
 
 import "./IERC20.sol";
 
-interface CErc20 is IERC20{
+interface CErc20 is IERC20 {
     function balanceOf(address) external view returns (uint);
 
     function mint(uint) external returns (uint);
@@ -33,7 +33,7 @@ interface CErc20 is IERC20{
     ) external returns (uint);
 }
 
-interface CEth is IERC20{
+interface CEth is IERC20 {
     function balanceOf(address) external view returns (uint);
 
     function mint() external payable;

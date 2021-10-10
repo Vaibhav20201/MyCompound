@@ -3,56 +3,43 @@ pragma solidity ^0.8;
 
 import "./interfaces/compound.sol";
 
-contract MyCompoundEth {
-    CEth public cToken;
+contract MyCompound {
 
-    constructor(address _cToken) {
-        cToken = CEth(_cToken);
+    function supplyErc20(address _token, address _cToken, uint _amount) external {
+        IERC20 token = IERC20(_token);
+        CErc20 cToken = CErc20(_cToken);
+        token.transferFrom(msg.sender, address(this), _amount);
+        token.approve(address(cToken), _amount);
+        require(cToken.mint(_amount) == 0, "mint failed");
+        cToken.transferFrom(address(this), msg.sender, cToken.balanceOf(address(this)));
     }
 
-    receive() external payable {
-        // React to receiving ether
-    }
-
-    function getCTokenBalance() public view returns (uint) {
-        return cToken.balanceOf(address(this));
-    }
-
-    function supply() external payable {
+    function supplyEth(address _cToken) external payable {
+        CEth cToken = CEth(_cToken);
         cToken.mint{value: msg.value}();
-        cToken.transferFrom(address(this), msg.sender, getCTokenBalance());
+        cToken.transferFrom(address(this), msg.sender, cToken.balanceOf(address(this)));
     }
 
-    // not view function
-    function getInfo() external returns (uint exchangeRate, uint supplyRate) {
-        // Amount of current exchange rate from cToken to underlying
-        exchangeRate = cToken.exchangeRateCurrent();
-        // Amount added to you supply balance this block
-        supplyRate = cToken.supplyRatePerBlock();
-    }
-
-    // not view function
-    function balanceOfUnderlying() external returns (uint) {
-        return cToken.balanceOfUnderlying(address(this));
-    }
-
-    function withdraw(uint _cTokenAmount) external {
+    function withdrawErc20(address _cToken, uint _cTokenAmount) external {
+        CErc20 cToken = CErc20(_cToken);
         cToken.transferFrom(msg.sender, address(this), _cTokenAmount);
         require(cToken.redeem(_cTokenAmount) == 0, "redeem failed");
-        // cToken.redeemUnderlying(underlying amount);
+    }
+
+    function withdrawEth(address _cToken, uint _cTokenAmount) external {
+        CEth cToken = CEth(_cToken);
+        cToken.transferFrom(msg.sender, address(this), _cTokenAmount);
+        require(cToken.redeem(_cTokenAmount) == 0, "redeem failed");
     }
 
     // borrow and repay //
-    Comptroller public comptroller =
-        Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
+    Comptroller public comptroller = Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
 
     PriceFeed public priceFeed = PriceFeed(0x922018674c12a7F0D394ebEEf9B58F186CdE13c1);
 
     // collateral
-    function getCollateralFactor() external view returns (uint) {
-        (, uint colFactor,) = comptroller.markets(
-        address(cToken)
-        );
+    function getCollateralFactor(address _cToken) external view returns (uint) {
+        (, uint colFactor,) = comptroller.markets(_cToken);
         return colFactor; // divide by 1e18 to get in %
     }
 
@@ -81,13 +68,13 @@ contract MyCompoundEth {
     }
 
     // enter market and borrow
-    function borrow(address _tokenToBorrow, address _cTokenToBorrow, uint _decimals, uint _amount) external {
+    function borrow(address _tokenToBorrow, address _cTokenToBorrow, uint _decimals, uint _amount, address[] memory cTokens) external {
         // enter market
         // enter the supply market so you can borrow another type of asset
-        address[] memory cTokens = new address[](1);
-        cTokens[0] = address(cToken);
         uint[] memory errors = comptroller.enterMarkets(cTokens);
-        require(errors[0] == 0, "Comptroller.enterMarkets failed.");
+        for(uint i=0; i<errors.length; i++){
+            require(errors[0] == 0, "Comptroller.enterMarkets failed.");
+        }
 
         // check liquidity
         (uint error, uint liquidity, uint shortfall) = comptroller.getAccountLiquidity(

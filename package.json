@@ -2,16 +2,29 @@
   "name": "mycompound",
   "version": "1.0.0",
   "description": "",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
-  },
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/Vaibhav20201/MyCompound.git"
+  },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vaibhav20201/MyCompound/issues"
+  },
+  "homepage": "https://github.com/Vaibhav20201/MyCompound#readme",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.4.7",
+    "hardhat": "^2.6.5"
+  },
   "dependencies": {
-    "web3": "^1.6.0"
+    "@openzeppelin/contracts": "^4.3.2"
   }
 }

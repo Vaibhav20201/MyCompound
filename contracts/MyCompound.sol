@@ -1,9 +1,11 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8;
 
 import "./interfaces/compound.sol";
 
 contract MyCompound {
+
+    // supply and withdraw //
 
     function supplyErc20(address _token, address _cToken, uint _amount) external {
         IERC20 token = IERC20(_token);
@@ -43,7 +45,7 @@ contract MyCompound {
 // ------------------------------------------------------------------------------------------------------------ //
 
 
-    // borrow and repay //
+    // borrow and payback //
 
     Comptroller public comptroller = Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
 

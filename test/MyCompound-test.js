@@ -30,6 +30,16 @@ describe("My Compound", function () {
             let bal = await tokenWithSigner.balanceOf(user.address);
             console.log(`${bal}`);
 
+            await network.provider.send("hardhat_setBalance", [
+                ACC,
+                ethers.utils.parseEther('10.0').toHexString(),
+            ]);
+
+            await network.provider.send("hardhat_setBalance", [
+                user.address,
+                ethers.utils.parseEther('10.0').toHexString(),
+            ]);
+
             await hre.network.provider.request({
                 method: "hardhat_impersonateAccount",
                 params: [ACC],

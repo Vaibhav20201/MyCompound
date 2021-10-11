@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://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@github.com/Vaibhav20201/MyCompound.git"
+    "url": "git+https://github.com/Vaibhav20201/MyCompound.git"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +25,8 @@
     "hardhat": "^2.6.5"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.2"
+    "@openzeppelin/contracts": "^4.3.2",
+    "@openzeppelin/test-helpers": "^0.5.15",
+    "dotenv": "^10.0.0"
   }
 }

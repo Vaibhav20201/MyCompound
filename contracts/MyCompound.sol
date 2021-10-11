@@ -2,18 +2,26 @@
 pragma solidity ^0.8;
 
 import "./interfaces/compound.sol";
+import "hardhat/console.sol";
+
 
 contract MyCompound {
 
     // supply and withdraw //
 
     function supplyErc20(address _token, address _cToken, uint _amount) external {
+        console.log("Inside");
         IERC20 token = IERC20(_token);
         CErc20 cToken = CErc20(_cToken);
+        console.log("tokens created");
         token.transferFrom(msg.sender, address(this), _amount);
+        console.log("Transfered to MyCompound");
         token.approve(_cToken, _amount);
+        console.log("Approved for minting");
         require(cToken.mint(_amount) == 0, "mint failed");
+        console.log("Minted");
         cToken.transfer(msg.sender, cToken.balanceOf(address(this)));
+        console.log("ATransdered back");
     }
 
     function supplyEth(address _cToken) external payable {

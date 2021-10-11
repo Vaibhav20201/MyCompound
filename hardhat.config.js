@@ -25,7 +25,6 @@ module.exports = {
     hardhat: {
       forking: {
         url: `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_ENDPOINT}`,
-        blockNumber: 13397853,
       }
     }
   }

@@ -13,12 +13,14 @@ describe("My Compound", function () {
         mycompound = await MyCompound.deploy();
         await mycompound.deployed();
         [user, _] = await ethers.getSigners();
+        mycompound.connect(user);
     });
     
-    describe("Supply", function(){
-        it("Should supply Erc20 tokens", async function(){
+    describe("", function(){
+        it("Should supply & withdraw Erc20 tokens", async function(){
             const dai = ethers.utils.parseUnits("0.000001", 18);
-            console.log(`${dai}`);
+            const daib = ethers.utils.parseUnits("0.0000001", 18);
+
             const tokenArtifact = await artifacts.readArtifact("IERC20");
             const token = new ethers.Contract(DAI, tokenArtifact.abi, ethers.provider);
             const tokenWithSigner = token.connect(user);
@@ -26,9 +28,6 @@ describe("My Compound", function () {
             const cTokenArtifact = await artifacts.readArtifact("CErc20");
             const cToken = new ethers.Contract(CDAI, cTokenArtifact.abi, ethers.provider);
             const cTokenWithSigner = cToken.connect(user);
-
-            let bal = await tokenWithSigner.balanceOf(user.address);
-            console.log(`${bal}`);
 
             await network.provider.send("hardhat_setBalance", [
                 ACC,
@@ -47,8 +46,6 @@ describe("My Compound", function () {
 
             const signer = await ethers.getSigner(ACC);
 
-            bal = await token.connect(signer).balanceOf(ACC);
-            console.log(`${bal}`);
             await token.connect(signer).transfer(user.address, dai);
 
             await hre.network.provider.request({
@@ -56,51 +53,23 @@ describe("My Compound", function () {
                 params: [ACC],
             });
 
-            bal = await tokenWithSigner.balanceOf(user.address);
-            console.log(`${bal}`);
-
             await tokenWithSigner.approve(mycompound.address, dai);
-            console.log("Approved");
             await mycompound.supplyErc20(DAI, CDAI, dai);
-        });
+            await mycompound.withdrawErc20(DAI, CDAI, cTokenWithSigner.balanceOf(mycompound.address));
+        }).timeout(100000);
 
-        xit("Should supply Ether", async function(){
+        it("Should supply & withdraw Ether", async function(){
             const cEthArtifact = await artifacts.readArtifact("CEth");
             const cEth = new ethers.Contract(CETH, cEthArtifact.abi, ethers.provider);
             const cEthWithSigner = cEth.connect(user);
-            console.log(user.address);
 
-            mycompound.supplyEth(CETH, {value: web3.toWei(0.001, 'ether')})
-        });
-    });
+            await network.provider.send("hardhat_setBalance", [
+                user.address,
+                ethers.utils.parseEther('10.0').toHexString(),
+            ]);
 
-    xdescribe("Withdraw", function(){
-        it("Should withdraw Erc20 tokens", async function(){
-            
-        });
-
-        it("Should withdraw Ether", async function(){
-
-        });
-    });
-
-    xdescribe("Borrow", function(){
-        it("Should borrow Erc20 tokens", async function(){
-            
-        });
-
-        it("Should borrow Ether", async function(){
-
-        });
-    });
-
-    xdescribe("Payback", function(){
-        it("Should payback Erc20 tokens", async function(){
-            
-        });
-
-        it("Should payback Ether", async function(){
-
-        });
+            await mycompound.supplyEth(CETH, {value: ethers.utils.parseEther('1.0').toHexString()});
+            await mycompound.withdrawEth(CETH, cEthWithSigner.balanceOf(mycompound.address));
+        }).timeout(100000);
     });
 });

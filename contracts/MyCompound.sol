@@ -7,21 +7,17 @@ import "hardhat/console.sol";
 
 contract MyCompound {
 
+    receive() external payable {}
+
     // supply and withdraw //
 
     function supplyErc20(address _token, address _cToken, uint _amount) external {
-        console.log("Inside");
         IERC20 token = IERC20(_token);
         CErc20 cToken = CErc20(_cToken);
-        console.log("tokens created");
         token.transferFrom(msg.sender, address(this), _amount);
-        console.log("Transfered to MyCompound");
         token.approve(_cToken, _amount);
-        console.log("Approved for minting");
         require(cToken.mint(_amount) == 0, "mint failed");
-        console.log("Minted");
         cToken.transfer(msg.sender, cToken.balanceOf(address(this)));
-        console.log("ATransdered back");
     }
 
     function supplyEth(address _cToken) external payable {
@@ -95,7 +91,7 @@ contract MyCompound {
         // enter the supply market so you can borrow another type of asset
         uint[] memory errors = comptroller.enterMarkets(cTokens);
         for(uint i=0; i<errors.length; i++){
-            require(errors[0] == 0, "Comptroller.enterMarkets failed.");
+            require(errors[i] == 0, "Comptroller.enterMarkets failed.");
         }
 
         // check liquidity

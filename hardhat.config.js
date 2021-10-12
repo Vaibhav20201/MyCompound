@@ -24,7 +24,8 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_ENDPOINT}`,
+        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_MAINNET_ENDPOINT}`,
+        blockNumber: 13405033
       }
     }
   }

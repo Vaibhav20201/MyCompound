@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8;
 
-import "./interfaces/compound.sol";
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./interfaces/compound.sol";
+import "./libraries/SafeUpgradeableERC20.sol";
 
 contract MyCompound {
-    using SafeERC20 for IERC20;
+    using SafeUpgradeableERC20 for IERC20Upgradeable;
     mapping(address => mapping(address => uint256)) UserTokenAmountMap;
 
     receive() external payable {}
@@ -14,7 +14,7 @@ contract MyCompound {
     // supply and withdraw //
 
     function supplyErc20(address _token, address _cToken, uint _amount) external {
-        IERC20 token = IERC20(_token);
+        IERC20Upgradeable token = IERC20Upgradeable(_token);
         CErc20 cToken = CErc20(_cToken);
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -42,7 +42,7 @@ contract MyCompound {
     }
 
     function withdrawErc20(address _token, address _cToken, uint _cTokenAmount) external {
-        IERC20 token = IERC20(_token);
+        IERC20Upgradeable token = IERC20Upgradeable(_token);
         CErc20 cToken = CErc20(_cToken);
 
         require(UserTokenAmountMap[msg.sender][_cToken] >= _cTokenAmount, "Extra");
@@ -98,7 +98,7 @@ contract MyCompound {
         require(liquidity > 0, "liquidity = 0");
 
         CErc20 cToken = CErc20(_cTokenToBorrow);
-        IERC20 token = IERC20(_tokenToBorrow);
+        IERC20Upgradeable token = IERC20Upgradeable(_tokenToBorrow);
 
         // calculate max borrow
         uint price = priceFeed.getUnderlyingPrice(_cTokenToBorrow);
@@ -144,7 +144,7 @@ contract MyCompound {
 
     // payback Erc20
     function paybackErc20(address _tokenBorrowed, address _cTokenBorrowed, uint _amount) external {
-        IERC20 token = IERC20(_tokenBorrowed);
+        IERC20Upgradeable token = IERC20Upgradeable(_tokenBorrowed);
         CErc20 cToken = CErc20(_cTokenBorrowed);
 
         token.safeTransferFrom(msg.sender, address(this), _amount);

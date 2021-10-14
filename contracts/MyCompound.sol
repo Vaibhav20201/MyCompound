@@ -1,13 +1,23 @@
 //SPDX-License-Identifier: Unlicense
+
 pragma solidity ^0.8;
 
 import "hardhat/console.sol";
 import "./interfaces/compound.sol";
 import "./libraries/SafeUpgradeableERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract MyCompound {
+contract MyCompound is Initializable{
     using SafeUpgradeableERC20 for IERC20Upgradeable;
+
     mapping(address => mapping(address => uint256)) UserTokenAmountMap;
+    Comptroller public comptroller;
+    PriceFeed public priceFeed;
+
+    function initialize(address comptrollerAddress, address priceFeedAddress) public initializer {
+        comptroller = Comptroller(comptrollerAddress);
+        priceFeed = PriceFeed(priceFeedAddress);
+    }
 
     receive() external payable {}
 
@@ -75,12 +85,7 @@ contract MyCompound {
 // ------------------------------------------------------------------------------------------------------------ //
 
 
-    // borrow and payback //
-
-    Comptroller public comptroller = Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
-
-    PriceFeed public priceFeed = PriceFeed(0x922018674c12a7F0D394ebEEf9B58F186CdE13c1);
-   
+    // borrow and payback //   
 
     // enter market and borrow Erc20
     function borrowErc20(address _tokenToBorrow, address _cTokenToBorrow, uint _decimals, uint _amount, address[] memory cTokens) external {

@@ -1,19 +1,19 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { time } = require("@openzeppelin/test-helpers")
 
 describe("My Compound", function () {
-    let MyCompound, mycompound, user;
+    let MyCompound, mycompoundproxy, user;
     const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
     const CDAI = "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643";
     const CETH = "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5"
     const ACC = "0x9a7a9d980ed6239b89232c012e21f4c210f4bef1";
+    const comptrollerAddress = "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B";
+    const priceFeedAddress = "0x922018674c12a7F0D394ebEEf9B58F186CdE13c1";
     beforeEach(async function(){
         MyCompound = await ethers.getContractFactory("MyCompound");
-        mycompound = await MyCompound.deploy();
-        await mycompound.deployed();
+        mycompoundproxy = await upgrades.deployProxy(MyCompound, [comptrollerAddress, priceFeedAddress]);
+        await mycompoundproxy.deployed();
         [user, _] = await ethers.getSigners();
-        mycompound.connect(user);
     });
     
     describe("", function(){
@@ -54,18 +54,18 @@ describe("My Compound", function () {
                 params: [ACC],
             });
             
-            await tokenWithSigner.approve(mycompound.address, dai);
-            await mycompound.supplyErc20(DAI, CDAI, dai);
+            await tokenWithSigner.approve(mycompoundproxy.address, dai);
+            await mycompoundproxy.supplyErc20(DAI, CDAI, dai);
             console.log("Supplied Erc20!")
 
-            await mycompound.borrowErc20(DAI, CDAI, 18, 100000, [CDAI]);
+            await mycompoundproxy.borrowErc20(DAI, CDAI, 18, 100000, [CDAI]);
             console.log("Borrowed Erc20!")
 
-            await tokenWithSigner.approve(mycompound.address, 100000);
-            await mycompound.paybackErc20(DAI, CDAI, 100000); 
+            await tokenWithSigner.approve(mycompoundproxy.address, 100000);
+            await mycompoundproxy.paybackErc20(DAI, CDAI, 100000); 
             console.log("Payed Back Erc20!")
 
-            await mycompound.withdrawErc20(DAI, CDAI, cTokenAmount);
+            await mycompoundproxy.withdrawErc20(DAI, CDAI, cTokenAmount);
             console.log("Withdrawn Erc20!")
             
         }).timeout(100000);
@@ -82,9 +82,9 @@ describe("My Compound", function () {
                 ethers.utils.parseEther('10.0').toHexString(),
             ]);
 
-            await mycompound.supplyEth(CETH, {value: ethers.utils.parseEther('1.0').toHexString()});
+            await mycompoundproxy.supplyEth(CETH, {value: ethers.utils.parseEther('1.0').toHexString()});
             console.log("Supplied Ether!")
-            await mycompound.withdrawEth(CETH, cTokenAmount);
+            await mycompoundproxy.withdrawEth(CETH, cTokenAmount);
             console.log("Withdrawn Ether")
         }).timeout(100000);
 
@@ -125,13 +125,13 @@ describe("My Compound", function () {
                 params: [ACC],
             });
             
-            await tokenWithSigner.approve(mycompound.address, dai);
-            await mycompound.supplyErc20(DAI, CDAI, dai);
+            await tokenWithSigner.approve(mycompoundproxy.address, dai);
+            await mycompoundproxy.supplyErc20(DAI, CDAI, dai);
 
-            await mycompound.borrowEth(CETH, 18, 100000, [CDAI]);
+            await mycompoundproxy.borrowEth(CETH, 18, 100000, [CDAI]);
             console.log("Borrowed Ether!")
 
-            await mycompound.paybackEth(CETH, {value: 100000});
+            await mycompoundproxy.paybackEth(CETH, {value: 100000});
             console.log("Payed Back Ether!")
             
         }).timeout(100000);

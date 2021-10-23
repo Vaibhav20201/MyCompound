@@ -1,20 +1,30 @@
 //SPDX-License-Identifier: Unlicense
+
 pragma solidity ^0.8;
 
-import "./interfaces/compound.sol";
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./interfaces/compound.sol";
+import "./libraries/SafeUpgradeableERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract MyCompound {
-    using SafeERC20 for IERC20;
+contract MyCompound is Initializable{
+    using SafeUpgradeableERC20 for IERC20Upgradeable;
+
     mapping(address => mapping(address => uint256)) UserTokenAmountMap;
+    Comptroller public comptroller;
+    PriceFeed public priceFeed;
+
+    function initialize(address comptrollerAddress, address priceFeedAddress) public initializer {
+        comptroller = Comptroller(comptrollerAddress);
+        priceFeed = PriceFeed(priceFeedAddress);
+    }
 
     receive() external payable {}
 
     // supply and withdraw //
 
     function supplyErc20(address _token, address _cToken, uint _amount) external {
-        IERC20 token = IERC20(_token);
+        IERC20Upgradeable token = IERC20Upgradeable(_token);
         CErc20 cToken = CErc20(_cToken);
 
         token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -42,7 +52,7 @@ contract MyCompound {
     }
 
     function withdrawErc20(address _token, address _cToken, uint _cTokenAmount) external {
-        IERC20 token = IERC20(_token);
+        IERC20Upgradeable token = IERC20Upgradeable(_token);
         CErc20 cToken = CErc20(_cToken);
 
         require(UserTokenAmountMap[msg.sender][_cToken] >= _cTokenAmount, "Extra");
@@ -75,12 +85,7 @@ contract MyCompound {
 // ------------------------------------------------------------------------------------------------------------ //
 
 
-    // borrow and payback //
-
-    Comptroller public comptroller = Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
-
-    PriceFeed public priceFeed = PriceFeed(0x922018674c12a7F0D394ebEEf9B58F186CdE13c1);
-   
+    // borrow and payback //   
 
     // enter market and borrow Erc20
     function borrowErc20(address _tokenToBorrow, address _cTokenToBorrow, uint _decimals, uint _amount, address[] memory cTokens) external {
@@ -98,7 +103,7 @@ contract MyCompound {
         require(liquidity > 0, "liquidity = 0");
 
         CErc20 cToken = CErc20(_cTokenToBorrow);
-        IERC20 token = IERC20(_tokenToBorrow);
+        IERC20Upgradeable token = IERC20Upgradeable(_tokenToBorrow);
 
         // calculate max borrow
         uint price = priceFeed.getUnderlyingPrice(_cTokenToBorrow);
@@ -144,7 +149,7 @@ contract MyCompound {
 
     // payback Erc20
     function paybackErc20(address _tokenBorrowed, address _cTokenBorrowed, uint _amount) external {
-        IERC20 token = IERC20(_tokenBorrowed);
+        IERC20Upgradeable token = IERC20Upgradeable(_tokenBorrowed);
         CErc20 cToken = CErc20(_cTokenBorrowed);
 
         token.safeTransferFrom(msg.sender, address(this), _amount);

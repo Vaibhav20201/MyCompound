@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
+    "@openzeppelin/contracts-upgradeable": "^4.3.2",
+    "@openzeppelin/hardhat-upgrades": "^1.10.0",
     "@openzeppelin/test-helpers": "^0.5.15",
     "dotenv": "^10.0.0"
   }
